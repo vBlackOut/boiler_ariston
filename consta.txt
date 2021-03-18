@@ -1,0 +1,4 @@
+22°C temp exterieur perte de 0.013°C par minutes dans le chauf eau sois 0.78 par heures
+
+
+( 2 degre de diff avec la sonde de temperature de la baie )

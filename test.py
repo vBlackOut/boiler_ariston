@@ -4,6 +4,8 @@ import pigpio
 from main import Boiler_Ariston
 from lib.pwmd import PWMControl
 from lcd_start import LCD_DISPLAY
+from rend import rendement
+
 
 
 

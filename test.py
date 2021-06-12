@@ -1,7 +1,7 @@
 import unittest
 from main import Boiler_Ariston
 from lib.pwmd import PWMControl
-
+from lcd_start import LCD_DISPLAY
 
 class TestBoiler(unittest.TestCase):
 
@@ -38,6 +38,34 @@ class TestBoiler(unittest.TestCase):
 
         self.assertTrue(isinstance(sonde2['haut']['temp'], float))
         self.assertTrue(sonde2['haut']['temp'] > 0 and sonde2['haut']['temp'] < 60)
+
+
+    def test_function_GetSonde_ousidedb(self):
+
+        # this function call directly on GPIO the temperature
+        lcd_function = LCD_DISPLAY("norun")
+
+        sonde1 = lcd_function.GetSonde1()
+
+        # check type return
+        self.assertEqual(type(sonde1), dict)
+
+        # check value if float or number and condition is operationnel
+        self.assertTrue(isinstance(sonde1['bas']['temp'], float))
+        self.assertTrue(sonde1['bas']['temp'] > 0 and sonde1['bas']['temp'] < 60)
+
+        self.assertTrue(isinstance(sonde1['haut']['temp'], float))
+        self.assertTrue(sonde1['haut']['temp'] > 0 and sonde1['haut']['temp'] < 60)
+
+        sonde2 = lcd_function.GetSonde2()
+
+        # check value if float or number and condition is operationnel
+        self.assertTrue(isinstance(sonde2['bas']['temp'], float))
+        self.assertTrue(sonde2['bas']['temp'] > 0 and sonde2['bas']['temp'] < 60)
+
+        self.assertTrue(isinstance(sonde2['haut']['temp'], float))
+        self.assertTrue(sonde2['haut']['temp'] > 0 and sonde2['haut']['temp'] < 60)
+
 
     def test_pwmcontrol(self):
 

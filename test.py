@@ -52,9 +52,6 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(isinstance(pwmcontrol.angle2, float))
         self.assertTrue(pwmcontrol.angle2 >= 0 and pwmcontrol.angle2 <= 100)
 
-    def test_get_round_8bit(self):
-        pass
-
 
 if __name__ == '__main__':
     unittest.main()

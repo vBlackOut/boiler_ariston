@@ -5,19 +5,19 @@ from lib.pwmd import PWMControl
 
 class TestBoiler(unittest.TestCase):
 
+    boiler = Boiler_Ariston()
+
     def test_function_security(self):
-        boiler = Boiler_Ariston()
         # return None if no error
-        self.assertEqual(boiler.security(), None)
+        self.assertEqual(self.boiler.security(), None)
 
     def test_function_GetSonde(self):
-        boiler = Boiler_Ariston()
 
         # return dict
         # {"bas": {"temp": 34.6}, "haut": {"temp": 36.8}, "moyenne": 34.5}
 
         # check sonde1
-        sonde1 = boiler.GetSonde1()
+        sonde1 = self.boiler.GetSonde1()
 
         # check type return
         self.assertEqual(type(sonde1), dict)
@@ -30,7 +30,7 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(sonde1['haut']['temp'] > 0 and sonde1['haut']['temp'] < 60)
 
         # check sonde 2
-        sonde2 = boiler.GetSonde2()
+        sonde2 = self.boiler.GetSonde2()
 
         # check value if float or number and condition is operationnel
         self.assertTrue(isinstance(sonde2['bas']['temp'], float))
@@ -53,7 +53,6 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(pwmcontrol.angle2 >= 0 and pwmcontrol.angle2 <= 100)
 
     def test_get_round_8bit(self):
-        # is olf function not use now
         pass
 
 

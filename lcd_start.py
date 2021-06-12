@@ -29,7 +29,7 @@ logging.basicConfig(format='%(asctime)s %(message)s')
 # Create the I2C bus
 
 class LCD_DISPLAY(Daemon):
-        def __init__(self):
+        def __init__(self, starting=""):
 
             # lcd_device = lcd()
             # lcd_device.lcd_clear()
@@ -70,7 +70,9 @@ class LCD_DISPLAY(Daemon):
             self.time_start = time.time() # en secondes
             self.count_failling = 0
             self.time_push = datetime.now()
-            super().__init__(pidfile=self.pidfile, sysargv=self.sysargv, stderr=self.stderr, stdout=self.stdout)
+            
+            if starting != "norun":
+                super().__init__(pidfile=self.pidfile, sysargv=self.sysargv, stderr=self.stderr, stdout=self.stdout)
 
             # GPIO.setup(self.buttonMenu, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # +
             # GPIO.setup(19, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # -

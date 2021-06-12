@@ -1,11 +1,37 @@
 import unittest
+import pigpio
+
 from main import Boiler_Ariston
 from lib.pwmd import PWMControl
 from lcd_start import LCD_DISPLAY
 
+
+
 class TestBoiler(unittest.TestCase):
 
     boiler = Boiler_Ariston()
+
+    def test_device_i2c(self):
+
+        pi = pigpio.pi() # connect to local Pi
+
+        check_list_device = ['0x27', '0x2c', '0x48']
+        list_system_i2c = []
+
+        for device in range(128):
+
+          h = pi.i2c_open(1, device)
+          try:
+             pi.i2c_read_byte(h)
+             list_system_i2c.append(hex(device))
+          except: # exception if i2c_read_byte fails
+             pass
+          pi.i2c_close(h)
+
+        pi.stop # disconnect from Pi
+
+        self.assertEqual(check_list_device, list_system_i2c)
+
 
     def test_function_security(self):
         # return None if no error

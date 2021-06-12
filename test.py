@@ -14,7 +14,7 @@ class TestBoiler(unittest.TestCase):
     def test_device_i2c(self):
 
         pi = pigpio.pi() # connect to local Pi
-        
+
         # 0x27 Screen LCD for read instantly data
         # 0x2C potentiometrie for adjusting backligth screen
         # 0x48 for ADS1115 is device for check the potentometrie on NTC sonde
@@ -110,6 +110,19 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(isinstance(pwmcontrol.angle2, float))
         self.assertTrue(pwmcontrol.angle2 >= 0 and pwmcontrol.angle2 <= 100)
 
+    def test_setresistance(self):
+
+        # define pwm percent for temperature check on NTC sonde
+
+        sonde1 = self.boiler.GetSonde1()
+        sonde2 = self.boiler.GetSonde2()
+
+        # attrib : sonde1, sonde2, temperature_moyenne1, temperature_moyenne2
+        R1, R2 = self.boiler.SetResistance(sonde1, sonde2, round(sonde1['moyenne'], 1), round(sonde2['moyenne'], 1), test=True)
+
+        # get value of programme return R1, R2 algorithme of define power output on pwm (triac)
+        self.assertTrue(R1)
+        self.assertTrue(R2)
 
 if __name__ == '__main__':
     unittest.main()

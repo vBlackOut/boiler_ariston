@@ -124,5 +124,12 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(R1)
         self.assertTrue(R2)
 
+    def test_rendement(self):
+        # test execution is on database
+        rend = rendement()
+
+        # rend is calculated temperature delta of 7 secondes later and now.
+        self.assertTrue(rend)
+
 if __name__ == '__main__':
     unittest.main()

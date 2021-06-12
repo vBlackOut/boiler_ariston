@@ -28,8 +28,10 @@ def rendement(minute):
 
     if round(Sonde_rend2*60,2) < 7:
         print("Estimation Ballon 2 Sortie: {}°C par heures\n".format(round(Sonde_rend2*60,2)))
+        return round(Sonde_rend2*60,2)
     else:
         print("Estimation Ballon 2 Sortie: Calcule en cours...\n".format(round(Sonde_rend2*60,2)))
+        return None
 
     #db_save = db.Global_info.create(rend_ballon1=Sonde_rend1 * minute, rend_ballon2=Sonde_rend2 * minute, date=date)
     #db_save.save()

@@ -14,6 +14,10 @@ class TestBoiler(unittest.TestCase):
     def test_device_i2c(self):
 
         pi = pigpio.pi() # connect to local Pi
+        
+        # 0x27 Screen LCD for read instantly data
+        # 0x2C potentiometrie for adjusting backligth screen
+        # 0x48 for ADS1115 is device for check the potentometrie on NTC sonde
 
         check_list_device = ['0x27', '0x2c', '0x48']
         list_system_i2c = []

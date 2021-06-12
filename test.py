@@ -11,7 +11,7 @@ class TestBoiler(unittest.TestCase):
         # return None if no error
         self.assertEqual(self.boiler.security(), None)
 
-    def test_function_GetSonde(self):
+    def test_function_GetSonde_insidedb(self):
 
         # return dict
         # {"bas": {"temp": 34.6}, "haut": {"temp": 36.8}, "moyenne": 34.5}

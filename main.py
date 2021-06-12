@@ -160,7 +160,7 @@ class Boiler_Ariston():
 
 
     @month_decrease(month="Février-Septembre", decrease_percent=5, temp="temp2")
-    def AjustPercent(self, temperature, temperatureMax, maxstep, temp=""):
+    def AjustPercent(self, temperature, temperatureMax, maxstep, temp="", test=False):
 
         step = round(temperatureMax - temperature, 2)
 
@@ -170,8 +170,8 @@ class Boiler_Ariston():
         if (step > maxstep) or (step > 0 and PWMControl.angle1 > 0 and temp == "temp1") or (step > 0 and PWMControl.angle2 > 0 and temp == "temp2"):
             temperatureMax = temperatureMax # + (5 * step)
             if step > round(maxstep/0.7, 1):
-
-                print("Boost : {} > {} {}".format(step, round(maxstep/0.7,1), temp))
+                if test == False:
+                    print("Boost : {} > {} {}".format(step, round(maxstep/0.7,1), temp))
 
                 if temp == "temp1" and round((100-round(((temperatureMax/100)*temperature), 2))) > 65:
                     AjustTemp = round((100-round(((temperatureMax/100)*temperature), 2)), 2)-50
@@ -187,7 +187,8 @@ class Boiler_Ariston():
 
             else:
                 if temp == "temp1" and (step <= maxstep/3):
-                    print("Boost +10.8 for end {} <= {} {}".format( step, round(maxstep/3,1), temp))
+                    if test == False:
+                        print("Boost +10.8 for end {} <= {} {}".format( step, round(maxstep/3,1), temp))
                     AjustTemp = round(100-(100-round(((temperatureMax/100)*temperature), 2)), 2)+(13/1.5)
 
                     minute = 5
@@ -200,7 +201,9 @@ class Boiler_Ariston():
                          AjustTemp = AjustTemp+5
 
                 elif temp == "temp2" and (step <= maxstep/3):
-                    print("Boost +10 for end {} <= {} {}".format(step, round(maxstep/3,1), temp))
+                    if test == False:
+                        print("Boost +10 for end {} <= {} {}".format(step, round(maxstep/3,1), temp))
+
                     AjustTemp = round(100-(100-round(((temperatureMax/100)*temperature), 2)), 2)+(20/2)
                 else:
                     AjustTemp = round(100-(100-round(((temperatureMax/100)*temperature), 2)), 2)
@@ -228,7 +231,8 @@ class Boiler_Ariston():
 
                     count_time = len(rend)
                     if round(avg(rend),3)*count_time <= 0.4:
-                         print("Boost Entrer rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
+                         if test == False:
+                             print("Boost Entrer rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
                          AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
 
 
@@ -243,8 +247,9 @@ class Boiler_Ariston():
                     count_time = len(rend)
 
                     if round(avg(rend),3)*count_time < 0.2:
-                         print("Boost Sortie rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
-                         AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
+                        if test == False:
+                            print("Boost Sortie rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
+                        AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
 
             if AjustTemp >= 100:
                 AjustTemp = 99
@@ -256,7 +261,7 @@ class Boiler_Ariston():
         else:
             return 0
 
-    def SetResistance(self, sonde1, sonde2, temperature1, temperature2):
+    def SetResistance(self, sonde1, sonde2, temperature1, temperature2, test=False):
 
         Resistance1_P = 1500
         Resistance2_P = 1500
@@ -291,11 +296,11 @@ class Boiler_Ariston():
             else:
                 Temp_R2 = self.AjustPercent(temperature2, 40, 7, "temp1")
                 if abs(temperature2-temperature1) >= 10 or Temp_R2 >= 30:
-                    Percent_R2 = self.AjustPercent(temperature2, 40, 7, "temp1")
+                    Percent_R2 = self.AjustPercent(temperature2, 40, 7, "temp1", test)
                 else:
-                    Percent_R2 = self.AjustPercent(temperature2, 35, 10, "temp1")
+                    Percent_R2 = self.AjustPercent(temperature2, 35, 10, "temp1", test)
 
-            if Percent_R2 != 0:
+            if Percent_R2 != 0 and test == False:
                 Resistance2 = True
                 db_save = db.Ballon1.create(date=date, resistance=Percent_R2, watt=round((Percent_R2/100*Resistance2_P)))
                 db_save.save()
@@ -305,24 +310,24 @@ class Boiler_Ariston():
         # SORTIE
         # SOIR R2 OFF
         if date.hour >= 21 or date.hour < 8 and Resistance2 == False:
-            Percent_R1 = self.AjustPercent(temperature1, 44, 5, "temp2") # jusqu'a 39
+            Percent_R1 = self.AjustPercent(temperature1, 44, 5, "temp2", test) # jusqu'a 39
 
         # SOIR R2 ON
         elif  date.hour >= 21 or date.hour < 8 and Resistance2 == True:
-            Percent_R1 = self.AjustPercent(temperature1, 44, 5, "temp2") # jusqu'a 39
+            Percent_R1 = self.AjustPercent(temperature1, 44, 5, "temp2", test) # jusqu'a 39
             if Percent_R1 > 0:
                 Percent_R1 = Percent_R1-5
 
         # journee R2 ON
         elif (date.hour < 21 or date.hour >= 8) and Resistance2 == True:
-            Percent_R1 = self.AjustPercent(temperature1, 50, 5, "temp2") # jusqu'a 40
+            Percent_R1 = self.AjustPercent(temperature1, 50, 5, "temp2", test) # jusqu'a 40
 
         # journee R2 OFF
         elif (date.hour < 21 or date.hour >= 8) and Resistance2 == False:
-            Percent_R1 = self.AjustPercent(temperature1, 55, 7, "temp2")
+            Percent_R1 = self.AjustPercent(temperature1, 55, 7, "temp2", test)
 
         # mise en marche
-        if temperature1 < 55:
+        if temperature1 < 55 and test == False:
             Resistance1 = True
             if Percent_R1 != 0:
                 db_save = db.Ballon2.create(date=date, Sonde_haut=sonde1['haut']['temp'], Sonde_bas=sonde1['bas']['temp'], moyenne_temperature=temperature1, resistance=Percent_R1, watt=round((Percent_R1/100*Resistance1_P)))

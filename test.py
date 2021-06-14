@@ -6,9 +6,6 @@ from lib.pwmd import PWMControl
 from lcd_start import LCD_DISPLAY
 from rend import rendement
 
-
-
-
 class TestBoiler(unittest.TestCase):
 
     boiler = Boiler_Ariston()
@@ -49,6 +46,7 @@ class TestBoiler(unittest.TestCase):
         # {"bas": {"temp": 34.6}, "haut": {"temp": 36.8}, "moyenne": 34.5}
 
         # check sonde1
+        # NEXT COMMIT ADD MOCK
         sonde1 = self.boiler.GetSonde1()
 
         # check type return
@@ -62,6 +60,7 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(sonde1['haut']['temp'] > 0 and sonde1['haut']['temp'] < 60)
 
         # check sonde 2
+        # NEXT COMMIT ADD MOCK
         sonde2 = self.boiler.GetSonde2()
 
         # check value if float or number and condition is operationnel
@@ -75,6 +74,7 @@ class TestBoiler(unittest.TestCase):
     def test_function_GetSonde_ousidedb(self):
 
         # this function call directly on GPIO the temperature
+        # NEXT COMMIT ADD MOCK
         lcd_function = LCD_DISPLAY("norun")
 
         sonde1 = lcd_function.GetSonde1()
@@ -102,6 +102,7 @@ class TestBoiler(unittest.TestCase):
     def test_pwmcontrol(self):
 
         # get status on resistance electricity
+        # NEXT COMMIT ADD MOCK
         pwmcontrol = PWMControl()
 
         # check value of pwm1

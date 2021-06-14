@@ -36,7 +36,7 @@ class TestBoiler(unittest.TestCase):
 
         pi.stop # disconnect from Pi
 
-        self.assertEqual(check_list_device, list_system_i2c)
+        self.assertListEqual(check_list_device, list_system_i2c)
 
 
     def test_function_security(self):

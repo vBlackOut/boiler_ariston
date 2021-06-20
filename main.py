@@ -40,7 +40,11 @@ force_variable = "auto"
 class Boiler_Ariston():
 
     def __init__(self):
-        pass
+
+        self.sonde1 = self.GetSonde1()
+        self.sonde2 = self.GetSonde2()
+        self.rend5 = self.rend(5)
+        self.rend1 = self.rend(1, return_count=True)
 
     def conso_global(self):
         tuyaconso = pytuya.OutletDevice('35466753483fda783614', '192.168.1.212', 'ec83cabf1d40bc17')
@@ -79,7 +83,7 @@ class Boiler_Ariston():
         return number
 
     def GetSonde1(self):
-        query = db.Ballon2.select().order_by(db.Ballon2.id.desc()).where(db.Ballon2.Sonde_haut != None or db.Ballon2.Sonde_bas != None).limit(1)
+        query = db.Ballon2.select().order_by(db.Ballon2.id.desc()).where(db.Ballon2.Sonde_haut != None or db.Ballon2.Sonde_bas != None).limit(3)
 
         Sonde_haut = [row.Sonde_haut for row in query]
         Sonde_bas = [row.Sonde_bas for row in query]
@@ -100,7 +104,7 @@ class Boiler_Ariston():
         return {"haut": {"temp": avg(Sonde_haut)}, "bas": {"temp": avg(Sonde_bas)}, "moyenne": AvgTemp}
 
     def GetSonde2(self):
-        query = db.Ballon1.select().order_by(db.Ballon1.id.desc()).where(db.Ballon1.Sonde_haut != None or db.Ballon1.Sonde_bas != None).limit(1)
+        query = db.Ballon1.select().order_by(db.Ballon1.id.desc()).where(db.Ballon1.Sonde_haut != None or db.Ballon1.Sonde_bas != None).limit(3)
         Sonde_haut = [row.Sonde_haut for row in query]
         Sonde_bas = [row.Sonde_bas for row in query]
         AvgTemp = (avg(Sonde_haut) + avg(Sonde_bas)) / 2
@@ -121,30 +125,15 @@ class Boiler_Ariston():
 
     def security(self, shutdown=False, msg=""):
 
-        sonde1 = self.GetSonde1()
-        sonde2 = self.GetSonde2()
-
-        query1 = db.Ballon1.select().order_by(db.Ballon1.id.desc()).limit(1)
-        Sonde1 = [[row.watt, row.moyenne_temperature] for row in query1]
-
-        if Sonde1[-1][0] == None:
-            Sonde1[-1][0] = 0
-
-        query2 = db.Ballon2.select().order_by(db.Ballon2.id.desc()).limit(1)
-        Sonde2 = [[row.watt, row.moyenne_temperature] for row in query2]
-
-        if Sonde2[-1][0] == None:
-            Sonde2[-1][0] = 0
-
-        if Sonde2[-1][0] > 0 and Sonde1[-1][0] > 0:
-            if (sonde1['moyenne'] > 60 or sonde2['moyenne'] > 55):
+        if self.sonde2["moyenne"] > 0 and self.sonde1["moyenne"] > 0:
+            if (self.sonde1['moyenne'] > 60 or self.sonde2['moyenne'] > 55):
                 shutdown = True
-                print("Security STOP ALL Warning temperature interne overload 50°C value is {}°C".format(sonde2['moyenne']))
+                print("Security STOP ALL Warning temperature interne overload 50°C value is {}°C".format(self.sonde2['moyenne']))
 
 
-            elif (sonde1['moyenne'] < 0 or sonde2['moyenne'] < 0):
+            elif (self.sonde1['moyenne'] < 0 or self.sonde2['moyenne'] < 0):
                 shutdown = True
-                print("Security STOP ALL Warning temperature interne overload 50°C value is {}°C".format(sonde2['moyenne']))
+                print("Security STOP ALL Warning temperature interne ERROR value is {EC".format(self.sonde2['moyenne']))
 
         if shutdown:
             print(msg)
@@ -191,13 +180,7 @@ class Boiler_Ariston():
                         print("Boost +10.8 for end {} <= {} {}".format( step, round(maxstep/3,1), temp))
                     AjustTemp = round(100-(100-round(((temperatureMax/100)*temperature), 2)), 2)+(13/1.5)
 
-                    minute = 5
-                    date = datetime.now()
-                    date_range = date - timedelta(minutes = minute)
-
-                    query = db.Global_info.select().order_by(db.Global_info.id.desc()).where(db.Global_info.date.between(date_range, date)).where(db.Global_info.rend_ballon1 != None)
-                    rend = [row.rend_ballon1 for row in query]
-                    if avg(rend) <= 0.5:
+                    if avg(self.rend5) <= 0.5:
                          AjustTemp = AjustTemp+5
 
                 elif temp == "temp2" and (step <= maxstep/3):
@@ -222,15 +205,7 @@ class Boiler_Ariston():
 
             if temp == "temp1":
                 if AjustTemp <= 33:
-                    minute = 1
-                    date = datetime.now()
-                    date_range = date - timedelta(minutes = minute)
-
-                    query = db.Global_info.select().order_by(db.Global_info.id.desc()).where(db.Global_info.date.between(date_range, date)).where(db.Global_info.rend_ballon1 != None)
-                    rend = [row.rend_ballon1 for row in query]
-
-                    count_time = len(rend)
-                    if round(avg(rend),3)*count_time <= 0.4:
+                    if round(avg(self.rend1[0]),3)*self.rend[1] <= 0.4:
                          if test == False:
                              print("Boost Entrer rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
                          AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
@@ -238,15 +213,7 @@ class Boiler_Ariston():
 
             elif temp == "temp2":
                 if AjustTemp <= 30:
-                    minute = 1
-                    date = datetime.now()
-                    date_range = date - timedelta(minutes = minute)
-
-                    query = db.Global_info.select().order_by(db.Global_info.id.desc()).where(db.Global_info.date.between(date_range, date)).where(db.Global_info.rend_ballon2 != None)
-                    rend = [row.rend_ballon2 for row in query]
-                    count_time = len(rend)
-
-                    if round(avg(rend),3)*count_time < 0.2:
+                    if round(avg(self.rend1[0]),3)*self.rend1[1] < 0.2:
                         if test == False:
                             print("Boost Sortie rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
                         AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
@@ -261,7 +228,18 @@ class Boiler_Ariston():
         else:
             return 0
 
-    def SetResistance(self, sonde1, sonde2, temperature1, temperature2, test=False):
+    def rend(self, minute, return_count=False):
+        date = datetime.now()
+        date_range = date - timedelta(minutes = minute)
+
+        query = db.Global_info.select().order_by(db.Global_info.id.desc()).where(db.Global_info.date.between(date_range, date)).where(db.Global_info.rend_ballon1 != None)
+        rend = [row.rend_ballon1 for row in query]
+        if return_count == False:
+            return avg(rend)
+        else:
+            return [avg(rend), len(rend)]
+
+    def SetResistance(self, temperature1, temperature2, test=False):
 
         Resistance1_P = 1500
         Resistance2_P = 1500
@@ -275,22 +253,12 @@ class Boiler_Ariston():
         # ENTRER
         date = datetime.now()
         date_range = date + timedelta(minutes=1)
-        query = db.Ballon2.select().order_by(db.Ballon2.id.desc()).limit(1)
-        Sonde2 = [[row.watt, row.moyenne_temperature] for row in query]
-
-        if Sonde2[-1][0] == None:
-            Sonde2[-1][0] = 0
-
-        if Sonde2[-1][1] == None:
-            query = db.Ballon2.select().order_by(db.Ballon2.id.desc()).where(db.Ballon2.moyenne_temperature != None).limit(3)
-            Sonde2_temp = [row.moyenne_temperature for row in query]
-            Sonde2[-1][1] = avg(Sonde2_temp)
 
         if date.hour >= 21 or date.hour < 8:
             print("SAVE MODE >= 21 hours dans < 8 hours")
 
         #ENTRER
-        if (temperature2 < 40 and (temperature1 >= 40)) or (temperature2 < 40 and Sonde2[-1][0] == 0):
+        if (temperature2 < 40 and (temperature1 >= 40)) or (temperature2 < 40 and self.sonde2["moyenne"] == 0):
             if date.hour >= 21 or date.hour < 8:
                 Percent_R2 = self.AjustPercent(temperature2, 35, 10, "temp1")
             else:
@@ -330,7 +298,7 @@ class Boiler_Ariston():
         if temperature1 < 55 and test == False:
             Resistance1 = True
             if Percent_R1 != 0:
-                db_save = db.Ballon2.create(date=date, Sonde_haut=sonde1['haut']['temp'], Sonde_bas=sonde1['bas']['temp'], moyenne_temperature=temperature1, resistance=Percent_R1, watt=round((Percent_R1/100*Resistance1_P)))
+                db_save = db.Ballon2.create(date=date, Sonde_haut=self.sonde1['haut']['temp'], Sonde_bas=self.sonde1['bas']['temp'], moyenne_temperature=temperature1, resistance=Percent_R1, watt=round((Percent_R1/100*Resistance1_P)))
                 db_save.save()
                 print("Resistance 2 Sortie - Turn On {} - conso: {} - {}%".format(temperature1, round(Percent_R1/100*Resistance1_P),  Percent_R1))
                 #PWMControl.control(2, Percent_R1)
@@ -343,18 +311,8 @@ if __name__ == "__main__":
 
     boiler.security(msg="STOP FORCED")
 
-    sonde1 = boiler.GetSonde1()
-    sonde2 = boiler.GetSonde2()
-
-    # print("--------------- SORTIE ------------")
-    # print("Sonde 1 - Haut", sonde1['haut']['temp'], sonde1['haut']['resistance'])
-    # print("Avg Temp Sonde 1: {}".format(round(sonde1['moyenne'], 1)))
-    # print("Sonde 1 - Bas", sonde1['bas']['temp'], sonde1['bas']['resistance'])
-    # print("--------------- ENTRER -------------")
-    # print("Sonde 2 - Haut", sonde2['haut']['temp'], sonde2['haut']['resistance'])
-    # print("Avg temp Sonde 2: {}".format(round(sonde2['moyenne'], 1)))
-    # print("Sonde 2 - Bas", sonde2['bas']['temp'], sonde2['bas']['resistance'])
-    # print()
+    sonde1 = boiler.sonde1
+    sonde2 = boiler.sonde2
 
     if debug:
         debug_table_data = [
@@ -380,7 +338,7 @@ if __name__ == "__main__":
         print('*{}Chauf Eau 2.0   {}       *'.format(" "*10, dt_string))
         print(table)
 
-        R1, R2 = boiler.SetResistance(sonde1, sonde2, round(sonde1['moyenne'], 1), round(sonde2['moyenne'], 1))
+        R1, R2 = boiler.SetResistance(round(sonde1['moyenne'], 1), round(sonde2['moyenne'], 1))
 
         if R1 == 0:
             db_save = db.Ballon1.create(date=date, resistance=0, watt=0)

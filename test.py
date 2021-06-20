@@ -47,7 +47,7 @@ class TestBoiler(unittest.TestCase):
         # {"bas": {"temp": 34.6}, "haut": {"temp": 36.8}, "moyenne": 34.5}
 
         # check sonde1
-        sonde1 = self.boiler.GetSonde1()
+        sonde1 = self.boiler.sonde2
 
         # check type return
         self.assertEqual(type(sonde1), dict)
@@ -60,7 +60,7 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(sonde1['haut']['temp'] > 0 and sonde1['haut']['temp'] < 60)
 
         # check sonde 2
-        sonde2 = self.boiler.GetSonde2()
+        sonde2 = self.boiler.sonde2
 
         # check value if float or number and condition is operationnel
         self.assertTrue(isinstance(sonde2['bas']['temp'], float))
@@ -87,7 +87,7 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(isinstance(sonde1['haut']['temp'], float))
         self.assertTrue(sonde1['haut']['temp'] > 0 and sonde1['haut']['temp'] < 60)
 
-        sonde2 = lcd_function.GetSonde2()
+        sonde2 = lcd_function.GetSonde2(
 
         # check value if float or number and condition is operationnel
         self.assertTrue(isinstance(sonde2['bas']['temp'], float))
@@ -114,8 +114,8 @@ class TestBoiler(unittest.TestCase):
 
         # define pwm percent for temperature check on NTC sonde
 
-        sonde1 = self.boiler.GetSonde1()
-        sonde2 = self.boiler.GetSonde2()
+        sonde1 = self.boiler.sonde1
+        sonde2 = self.boiler.sonde2
 
         # attrib : sonde1, sonde2, temperature_moyenne1, temperature_moyenne2
         R1, R2 = self.boiler.SetResistance(round(sonde1['moyenne'], 1), round(sonde2['moyenne'], 1), test=True)

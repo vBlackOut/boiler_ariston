@@ -151,6 +151,9 @@ class Boiler_Ariston():
     @month_decrease(month="Février-Septembre", decrease_percent=5, temp="temp2")
     def AjustPercent(self, temperature, temperatureMax, maxstep, temp="", test=False):
 
+        rend_avg = self.rend1[0]
+        rend_count =self.rend1[1]
+
         step = round(temperatureMax - temperature, 2)
 
         AjustTemp = 0
@@ -205,7 +208,7 @@ class Boiler_Ariston():
 
             if temp == "temp1":
                 if AjustTemp <= 33:
-                    if round(avg(self.rend1[0]),3)*self.rend[1] <= 0.4:
+                    if round(rend_avg,3)*rend_count <= 0.4:
                          if test == False:
                              print("Boost Entrer rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
                          AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
@@ -213,7 +216,7 @@ class Boiler_Ariston():
 
             elif temp == "temp2":
                 if AjustTemp <= 30:
-                    if round(avg(self.rend1[0]),3)*self.rend1[1] < 0.2:
+                    if round(rend_avg,3)*rend_count < 0.2:
                         if test == False:
                             print("Boost Sortie rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
                         AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
@@ -292,10 +295,10 @@ class Boiler_Ariston():
 
         # journee R2 OFF
         elif (date.hour < 21 or date.hour >= 8) and Resistance2 == False:
-            Percent_R1 = self.AjustPercent(temperature1, 55, 7, "temp2", test)
+            Percent_R1 = self.AjustPercent(temperature1, 50, 7, "temp2", test)
 
         # mise en marche
-        if temperature1 < 55 and test == False:
+        if temperature1 < 50 and test == False:
             Resistance1 = True
             if Percent_R1 != 0:
                 db_save = db.Ballon2.create(date=date, Sonde_haut=self.sonde1['haut']['temp'], Sonde_bas=self.sonde1['bas']['temp'], moyenne_temperature=temperature1, resistance=Percent_R1, watt=round((Percent_R1/100*Resistance1_P)))

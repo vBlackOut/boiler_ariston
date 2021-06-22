@@ -210,16 +210,16 @@ class Boiler_Ariston():
                 if AjustTemp <= 33:
                     if round(rend_avg,3)*rend_count <= 0.4:
                          if test == False:
-                             print("Boost Entrer rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
-                         AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
+                             print("Boost Entrer rend + ({}) rendement = {}°C".format(round(10-round(round(rend_avg,3)*(rend_count*5),2)*2, 2), round(round(avg(rend_avg),3)*rend_count, 3)))
+                         AjustTemp = round(AjustTemp+round(10-round(round(avg(rend_avg),3)*(rend_count*5),2)*2, 2), 2)
 
 
             elif temp == "temp2":
                 if AjustTemp <= 30:
                     if round(rend_avg,3)*rend_count < 0.2:
                         if test == False:
-                            print("Boost Sortie rend + ({}) rendement = {}°C".format(round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), round(round(avg(rend),3)*count_time, 3)))
-                        AjustTemp = round(AjustTemp+round(10-round(round(avg(rend),3)*(count_time*5),2)*2, 2), 2)
+                            print("Boost Sortie rend + ({}) rendement = {}°C".format(round(10-round(round(rend_avg,3)*(count_time*5),2)*2, 2), round(round(rend_avg,3)*rend_count, 3)))
+                        AjustTemp = round(AjustTemp+round(10-round(round(avg(rend_avg),3)*(rend_count*5),2)*2, 2), 2)
 
             if AjustTemp >= 100:
                 AjustTemp = 99

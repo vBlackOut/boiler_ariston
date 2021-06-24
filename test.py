@@ -47,7 +47,7 @@ class TestBoiler(unittest.TestCase):
         # {"bas": {"temp": 34.6}, "haut": {"temp": 36.8}, "moyenne": 34.5}
 
         # check sonde1
-        sonde1 = self.boiler.sonde2
+        sonde1 = self.boiler.sonde1
 
         # check type return
         self.assertEqual(type(sonde1), dict)

@@ -11,6 +11,7 @@ import requests
 import logging
 
 #from lib.SCR import *
+from lcd_start import LCD_DISPLAY
 from lib.pwmd import PWMControl
 from lib.display import *
 from lib import pytuya
@@ -36,15 +37,17 @@ date = datetime.now
 ads = ADS.ADS1115(i2c)
 
 force_variable = "auto"
+turn_off = True
 
 class Boiler_Ariston():
 
-    def __init__(self):
+    def __init__(self, turn_off=False):
 
         self.sonde1 = self.GetSonde1()
         self.sonde2 = self.GetSonde2()
         self.rend5 = self.rend(5)
         self.rend1 = self.rend(1, return_count=True)
+        self.turn_off = turn_off
 
     def conso_global(self):
         tuyaconso = pytuya.OutletDevice('35466753483fda783614', '192.168.1.212', 'ec83cabf1d40bc17')
@@ -83,45 +86,53 @@ class Boiler_Ariston():
         return number
 
     def GetSonde1(self):
-        query = db.Ballon2.select().order_by(db.Ballon2.id.desc()).where(db.Ballon2.Sonde_haut != None or db.Ballon2.Sonde_bas != None).limit(3)
+        lcd_function = LCD_DISPLAY("norun")
 
-        Sonde_haut = [row.Sonde_haut for row in query]
-        Sonde_bas = [row.Sonde_bas for row in query]
+        sonde1 = lcd_function.GetSonde1()
+        #print(sonde1)
 
-        AvgTemp = (avg(Sonde_haut) + avg(Sonde_bas)) / 2
+        # query = db.Ballon2.select().order_by(db.Ballon2.id.desc()).where(db.Ballon2.Sonde_haut != None or db.Ballon2.Sonde_bas != None).limit(1)
+        #
+        # Sonde_haut = [row.Sonde_haut for row in query]
+        # Sonde_bas = [row.Sonde_bas for row in query]
+        #
+        # AvgTemp = (avg(Sonde_haut) + avg(Sonde_bas)) / 2
+        #
+        # if avg(Sonde_haut) <= 0 or avg(Sonde_haut) >= 70:
+        #     pass
+        #     #security(shutdown=True, msg="Sonde haut Ballon 1 value {} [{}] min 1, max 70".format(Sonde_haut, stylize("ERROR", colored.fg("red"))))
+        #     #exit(0)
+        #
+        # if avg(Sonde_bas) <= 0 or avg(Sonde_bas) >= 70:
+        #     pass
+        #     #security(shutdown=True, msg="Sonde bas Ballon 1 value {} [{}] min 1, max 70".format(Sonde_haut, stylize("ERROR", colored.fg("red"))))
+        #     #exit(0)
 
-        if avg(Sonde_haut) <= 0 or avg(Sonde_haut) >= 70:
-            pass
-            #security(shutdown=True, msg="Sonde haut Ballon 1 value {} [{}] min 1, max 70".format(Sonde_haut, stylize("ERROR", colored.fg("red"))))
-            #exit(0)
 
-        if avg(Sonde_bas) <= 0 or avg(Sonde_bas) >= 70:
-            pass
-            #security(shutdown=True, msg="Sonde bas Ballon 1 value {} [{}] min 1, max 70".format(Sonde_haut, stylize("ERROR", colored.fg("red"))))
-            #exit(0)
-
-
-        return {"haut": {"temp": avg(Sonde_haut)}, "bas": {"temp": avg(Sonde_bas)}, "moyenne": AvgTemp}
+        return sonde1
 
     def GetSonde2(self):
-        query = db.Ballon1.select().order_by(db.Ballon1.id.desc()).where(db.Ballon1.Sonde_haut != None or db.Ballon1.Sonde_bas != None).limit(3)
-        Sonde_haut = [row.Sonde_haut for row in query]
-        Sonde_bas = [row.Sonde_bas for row in query]
-        AvgTemp = (avg(Sonde_haut) + avg(Sonde_bas)) / 2
+        lcd_function = LCD_DISPLAY("norun")
 
-        if avg(Sonde_haut) <= 0 or avg(Sonde_haut) >= 70:
-            pass
+        sonde2 = lcd_function.GetSonde2()
+        #print(sonde2)
+        # query = db.Ballon1.select().order_by(db.Ballon1.id.desc()).where(db.Ballon1.Sonde_haut != None or db.Ballon1.Sonde_bas != None).limit(1)
+        # Sonde_haut = [row.Sonde_haut for row in query]
+        # Sonde_bas = [row.Sonde_bas for row in query]
+        # AvgTemp = (avg(Sonde_haut) + avg(Sonde_bas)) / 2
+
+        # if avg(Sonde_haut) <= 0 or avg(Sonde_haut) >= 70:
+        #     pass
             #security(shutdown=True, msg="Sonde haut Ballon 2 value {} [{}] min 1, max 70".format(Sonde_haut, stylize("ERROR", colored.fg("red"))))
             #exit(0)
 
-        if avg(Sonde_bas) <= 0 or avg(Sonde_bas) >= 70:
-            pass
+        # if avg(Sonde_bas) <= 0 or avg(Sonde_bas) >= 70:
+        #     pass
             #security(shutdown=True, msg="Sonde bas Ballon 2 value {} [{}] min 1, max 70".format(Sonde_haut, stylize("ERROR", colored.fg("red"))))
             #exit(0)
 
-
         #return {"bas": {"temp": avg(Sonde_haut)}, "haut": {"temp": avg(Sonde_bas)}, "moyenne": AvgTemp}
-        return {"bas": {"temp": avg(Sonde_haut)}, "haut": {"temp": avg(Sonde_bas)}, "moyenne": avg(Sonde_bas)}
+        return sonde2
 
     def security(self, shutdown=False, msg=""):
 
@@ -155,7 +166,6 @@ class Boiler_Ariston():
         rend_count =self.rend1[1]
 
         step = round(temperatureMax - temperature, 2)
-
         AjustTemp = 0
 
         # determine la puissance de chauffe. coefficien de la temperature maximum et en fonction du rendement de chauf. ( gain de chaleur produite a l'interieur de la cuve )
@@ -213,12 +223,11 @@ class Boiler_Ariston():
                              print("Boost Entrer rend + ({}) rendement = {}°C".format(round(10-round(round(rend_avg,3)*(rend_count*5),2)*2, 2), round(round(avg(rend_avg),3)*rend_count, 3)))
                          AjustTemp = round(AjustTemp+round(10-round(round(avg(rend_avg),3)*(rend_count*5),2)*2, 2), 2)
 
-
             elif temp == "temp2":
                 if AjustTemp <= 30:
                     if round(rend_avg,3)*rend_count < 0.2:
                         if test == False:
-                            print("Boost Sortie rend + ({}) rendement = {}°C".format(round(10-round(round(rend_avg,3)*(count_time*5),2)*2, 2), round(round(rend_avg,3)*rend_count, 3)))
+                            print("Boost Sortie rend + ({}) rendement = {}°C".format(round(10-round(round(rend_avg,3)*(rend_count*5),2)*2, 2), round(round(rend_avg,3)*rend_count, 3)))
                         AjustTemp = round(AjustTemp+round(10-round(round(avg(rend_avg),3)*(rend_count*5),2)*2, 2), 2)
 
             if AjustTemp >= 100:
@@ -226,8 +235,10 @@ class Boiler_Ariston():
 
         if force_variable == "auto":
             return round(float(AjustTemp), 2) #round_of_8bit(AjustTemp)
+
         elif AjustTemp > 0:
             return int(force_variable)
+
         else:
             return 0
 
@@ -237,8 +248,10 @@ class Boiler_Ariston():
 
         query = db.Global_info.select().order_by(db.Global_info.id.desc()).where(db.Global_info.date.between(date_range, date)).where(db.Global_info.rend_ballon1 != None)
         rend = [row.rend_ballon1 for row in query]
+
         if return_count == False:
             return avg(rend)
+
         else:
             return [avg(rend), len(rend)]
 
@@ -263,9 +276,9 @@ class Boiler_Ariston():
         #ENTRER
         if (temperature2 < 40 and (temperature1 >= 40)) or (temperature2 < 40 and self.sonde2["moyenne"] == 0):
             if date.hour >= 21 or date.hour < 8:
-                Percent_R2 = self.AjustPercent(temperature2, 35, 10, "temp1")
+                Percent_R2 = self.AjustPercent(temperature2, 35, 10, "temp1", test)
             else:
-                Temp_R2 = self.AjustPercent(temperature2, 40, 7, "temp1")
+                Temp_R2 = self.AjustPercent(temperature2, 40, 7, "temp1", True)
                 if abs(temperature2-temperature1) >= 10 or Temp_R2 >= 30:
                     Percent_R2 = self.AjustPercent(temperature2, 40, 7, "temp1", test)
                 else:
@@ -310,9 +323,9 @@ class Boiler_Ariston():
 
 
 if __name__ == "__main__":
-    boiler = Boiler_Ariston()
+    boiler = Boiler_Ariston(turn_off)
 
-    boiler.security(msg="STOP FORCED")
+    #boiler.security(msg="STOP FORCED")
 
     sonde1 = boiler.sonde1
     sonde2 = boiler.sonde2
@@ -341,6 +354,10 @@ if __name__ == "__main__":
         print('*{}Chauf Eau 2.0   {}       *'.format(" "*10, dt_string))
         print(table)
 
+        if boiler.turn_off is True:
+            print("Switch power off boiler is disabled")
+            exit(0)
+
         R1, R2 = boiler.SetResistance(round(sonde1['moyenne'], 1), round(sonde2['moyenne'], 1))
 
         if R1 == 0:
@@ -350,6 +367,8 @@ if __name__ == "__main__":
         if R2 == 0:
             db_save = db.Ballon2.create(date=date, resistance=0, watt=0)
             db_save.save()
+        else:
+            print()
 
     print()
     exit(0)

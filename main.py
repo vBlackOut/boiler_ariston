@@ -147,14 +147,7 @@ class Boiler_Ariston():
                 print("Security STOP ALL Warning temperature interne ERROR value is {EC".format(self.sonde2['moyenne']))
 
         if shutdown:
-            print(msg)
-            date = datetime.now()
-            db_save = db.Ballon1.create(date=date, resistance=0, watt=0)
-            db_save.save()
-            db_save = db.Ballon2.create(date=date, resistance=0, watt=0)
-            db_save.save()
-            os.system("sudo reboot")
-            exit(0)
+            self.turn_off = True
 
         return None
 
@@ -321,11 +314,20 @@ class Boiler_Ariston():
 
         return Percent_R2, Percent_R1
 
+    def resistance_db(self, R1=0, R2=0):
+        if R1 == 0:
+            db_save = db.Ballon1.create(date=date, resistance=0, watt=0)
+            db_save.save()
+
+        if R2 == 0:
+            db_save = db.Ballon2.create(date=date, resistance=0, watt=0)
+            db_save.save()
+
 
 if __name__ == "__main__":
     boiler = Boiler_Ariston(turn_off)
 
-    #boiler.security(msg="STOP FORCED")
+    boiler.security(msg="STOP FORCED")
 
     sonde1 = boiler.sonde1
     sonde2 = boiler.sonde2
@@ -356,19 +358,12 @@ if __name__ == "__main__":
 
         if boiler.turn_off is True:
             print("Switch power off boiler is disabled")
+            boiler.resistance_db()
             exit(0)
 
         R1, R2 = boiler.SetResistance(round(sonde1['moyenne'], 1), round(sonde2['moyenne'], 1))
+        boiler.resistance_db(R1, R2)
 
-        if R1 == 0:
-            db_save = db.Ballon1.create(date=date, resistance=0, watt=0)
-            db_save.save()
-
-        if R2 == 0:
-            db_save = db.Ballon2.create(date=date, resistance=0, watt=0)
-            db_save.save()
-        else:
-            print()
 
     print()
     exit(0)

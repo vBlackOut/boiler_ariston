@@ -88,6 +88,9 @@ class TestBoiler(unittest.TestCase):
         self.assertTrue(sonde1['haut']['temp'] > 0 and sonde1['haut']['temp'] < 60)
 
         sonde2 = lcd_function.GetSonde2()
+        
+        # check type return
+        self.assertEqual(type(sonde2), dict)
 
         # check value if float or number and condition is operationnel
         self.assertTrue(isinstance(sonde2['bas']['temp'], float))
